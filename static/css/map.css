@@ -1,0 +1,15 @@
+#map {
+    height: 35rem;
+}
+  
+.red-icon  {
+    background-color: red;
+    border-radius: 50%;
+    border: 20px solid rgba(255, 255, 255, 0.5);
+}
+  
+.black-icon {
+    background-color: black;
+    border-radius: 50%;
+    border: 20px solid rgba(255, 255, 255, 0.5);
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flight Simulator Game</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/time.js" defer></script>
+</head>
+<body>
+  <div class="ui-container">
+    <div class="top-bar">
+      <div id="time"></div>
+      <div id="date"></div>
+    </div>
+    <div class="main-display">
+      <img src="/static/images/BG.jpeg" alt="Airplane Model" class="airplane-image">
+      <div class="flight-path"></div>
+    </div>
+    <div class="action-buttons" id="start-button">
+      <a href="{{ url_for('game') }}"><button class="btn play">Start</button></a>
+    </div>
+  </div>
+</body>
+</html>
