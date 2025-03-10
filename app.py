@@ -73,14 +73,16 @@ def create_user(player_name):
                         for airport in airports:
                             user.append(airport["ident"])
                         user_tuple = tuple(user)
-                        #print(len(user_tuple))
                         sql = """INSERT INTO user_data(name, base, target, airport3, airport4, airport5, airport6, airport7, airport8, airport9, airport10, airport11, airport12, airport13, airport14, airport15, airport16, airport17, airport18, airport19, airport20, airport21, airport22, airport23, airport24, airport25, airport26, airport27, airport28, airport29, airport30, airport31, airport32, airport33, airport34, airport35, airport36, airport37, airport38, airport39, airport40)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
                         cursor.execute(sql, user_tuple)
-                        response = {
-                            "message": "success",
-                            "status": 200,
-                        }
+                        response = [
+                            {
+                                "message": "success",
+                                "status": 200
+                            },
+                            airports
+                        ]
                         json_response = json.dumps(response)
                         http_response = Response(json_response, status=200, mimetype='application/json')
                         return http_response
