@@ -5,9 +5,12 @@ const blackIcon = L.divIcon({className: 'black-icon'});
 
 let cur = 0;
 const map = L.map('map', {tap: false});
+const airportMarkers = L.featureGroup().addTo(map);
 let currentFuel = 1000;
 let currentTrip = 0;
-let playerBonus = 0;
+let currentBonus = 0;
+let killedEnemies = 0;
+let airports;
 
 function degreesToRadians(degrees)  {
   return degrees * Math.PI / 180;
@@ -27,8 +30,18 @@ function calDis(lat1, lon1, lat2, lon2)  {
   return Math.round(earthRadiusKm * c);
 }
 
-function createMap(airports) {
-    const airportMarkers = L.featureGroup().addTo(map);
+function checkLose() {
+    for (let i = 0; i < airports.length; i++) {
+        if (cur !== i && airports[i].active) {
+            const dis = calDis(airports[cur].latitude_deg, airports[cur].longitude_deg, airports[i].latitude_deg, airports[i].longitude_deg);
+            if (dis <= currentFuel * 2)
+                return false;
+        }
+    }
+    return true;
+}
+
+function createMap() {
     for (let i = 0; i < airports.length; i++) {
         const marker = L.marker([airports[i].latitude_deg, airports[i].longitude_deg]).addTo(map);
         airportMarkers.addLayer(marker);
@@ -61,7 +74,7 @@ function createMap(airports) {
                         currentFuel -= Math.round(dis / 2);
                         currentTrip += Math.round(dis);
                         cur = i;
-                        document.querySelector('#trip-distance').innerHTML = `Trip: ${currentTrip}`;
+                        document.querySelector('#trip-distance').innerHTML = `Trip: ${currentTrip} km`;
                         document.querySelector('#fuel-status').innerHTML = `Fuel: ${currentFuel} L`;
                         document.querySelector('#name-location').innerHTML = `Name: ${airports[cur].name}`;
                         document.querySelector('#municipality-location').innerHTML = `Municipality: ${airports[cur].municipality}`;
@@ -71,7 +84,7 @@ function createMap(airports) {
                         if (cur === 1) {
                             alert('You arrived at your target. Destroy it');
                             airports[cur].active = false;
-                            playerBonus += 50;
+                            currentBonus += 50;
                             document.querySelector('#player-bonus').innerHTML = `Bonus: ${playerBonus}%`;
                             document.querySelector('#player-mission').innerHTML = 'Mission completed: Yes';
                         } else if(cur === 0) {
@@ -80,7 +93,46 @@ function createMap(airports) {
                             else
                                 alert('Your mission is failed');
                         } else {
-
+                            const land = confirm('Do you want to land at this airport?');
+                            if (land) {
+                                if (airports[cur].storage > 0) {
+                                    currentFuel += Math.round(airports[cur].storage * (currentBonus / 100) + 1);
+                                    alert(`Congratulations! You have found ${airports[cur].storage} litres of gasoline here`);
+                                    document.querySelector('#fuel-status').innerHTML = `Fuel: ${airports[cur].storage} L`;
+                                    airports[cur].storage = 0;
+                                } else {
+                                    alert('Damn, there is no fuels at here');
+                                }
+                                if (airports[cur].garrison > 0) {
+                                    alert('Damn, enemies found your aircraft and your fuel was stolen');
+                                    currentFuel = Math.round(currentFuel / 2);
+                                    document.querySelector('#fuel-status').innerHTML = `Fuel: ${currentFuel} L`;
+                                }
+                            } else {
+                                const destroy = confirm('Do you want to destroy airport?');
+                                if (destroy) {
+                                    airports[cur].active = false;
+                                    if (airports[cur].garrison > 0) {
+                                        killedEnemies += airports[cur].garrison;
+                                        alert(`Nice! You killed ${airports[cur].garrison} enemies.`);
+                                        while (killedEnemies >= 1000) {
+                                            killedEnemies -= 1000;
+                                            currentBonus += 20;
+                                        }
+                                        alert(`Now your bonus is  ${currentBonus}%.`);
+                                        document.querySelector('#player-bonus').innerHTML = `Bonus: ${currentBonus}%`;
+                                    } else
+                                        alert('Damn, we killed nothing.');
+                                } else {
+                                    alert(`Let's continue the journey.`);
+                                }
+                            }
+                        }
+                        if(checkLose()) {
+                            alert('You cannot travel to any other airport and you lost.');
+                        } else {
+                            airportMarkers.clearLayers();
+                            createMap();
                         }
                     } else
                         alert('You do not have enough fuel to come to this airport. Please choose another airport.')
@@ -114,7 +166,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
                 console.log(error.message);
             }
         }
-        const airports = data[1];
+        airports = data[1];
         document.querySelector('#name-base').innerHTML = `Name: ${airports[0].name}`;
         document.querySelector('#municipality-base').innerHTML = `Municipality: ${airports[0].municipality}`;
         document.querySelector('#country-base').innerHTML = `Country: ${airports[0].country}`;
@@ -135,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
         map.setView([airports[0].latitude_deg, airports[0].latitude_deg], 5);
-        createMap(airports);
+        createMap();
 
     } catch (error) {
         console.log(error.message);
