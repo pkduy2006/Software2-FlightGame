@@ -68,8 +68,7 @@ def create_user(player_name):
                             airports[id]["storage"] = type["storage"]
                             id = id + 1
                     try:
-                        user = []
-                        user.append(player_name)
+                        user = [player_name]
                         for airport in airports:
                             user.append(airport["ident"])
                         user_tuple = tuple(user)

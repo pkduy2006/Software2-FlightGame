@@ -3,8 +3,11 @@
 const redIcon = L.divIcon({className: 'red-icon'});
 const blackIcon = L.divIcon({className: 'black-icon'});
 
-let cur;
+let cur = 0;
 const map = L.map('map', {tap: false});
+let currentFuel = 1000;
+let currentTrip = 0;
+let playerBonus = 0;
 
 function degreesToRadians(degrees)  {
   return degrees * Math.PI / 180;
@@ -54,7 +57,33 @@ function createMap(airports) {
                 div.append(button);
                 marker.bindPopup(div);
                 div.addEventListener('click', async function () {
+                    if (dis <= currentFuel * 2) {
+                        currentFuel -= Math.round(dis / 2);
+                        currentTrip += Math.round(dis);
+                        cur = i;
+                        document.querySelector('#trip-distance').innerHTML = `Trip: ${currentTrip}`;
+                        document.querySelector('#fuel-status').innerHTML = `Fuel: ${currentFuel} L`;
+                        document.querySelector('#name-location').innerHTML = `Name: ${airports[cur].name}`;
+                        document.querySelector('#municipality-location').innerHTML = `Municipality: ${airports[cur].municipality}`;
+                        document.querySelector('#country-location').innerHTML = `Country: ${airports[cur].country}`;
+                        alert(`Welcome to ${airports[cur].name}`);
 
+                        if (cur === 1) {
+                            alert('You arrived at your target. Destroy it');
+                            airports[cur].active = false;
+                            playerBonus += 50;
+                            document.querySelector('#player-bonus').innerHTML = `Bonus: ${playerBonus}%`;
+                            document.querySelector('#player-mission').innerHTML = 'Mission completed: Yes';
+                        } else if(cur === 0) {
+                            if (airports[1].active === false)
+                                alert('Welcome home our greatest hero!');
+                            else
+                                alert('Your mission is failed');
+                        } else {
+
+                        }
+                    } else
+                        alert('You do not have enough fuel to come to this airport. Please choose another airport.')
                 });
             }
             marker.bindPopup(div);
@@ -98,7 +127,6 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         document.querySelector('#municipality-location').innerHTML = `Municipality: ${airports[0].municipality}`;
         document.querySelector('#country-location').innerHTML = `Country: ${airports[0].country}`;
 
-        cur = 0;
         for (let airport of airports)
             airport.active = true;
 
